@@ -55,7 +55,7 @@ This project comes in **two flavors**:
    - **Limitation**: Cannot choose specific tasks (completes whatever it finds)
    - Simple and straightforward
 
-2. **[Advanced Version](https://github.com/yourusername/altissiaBooster-advanced)** ⭐
+2. **[Advanced Version](https://github.com/alaneisenbergg/altissiaboosterAdvanced)** ⭐
    - All basic features +
    - **Task Selection**: Choose specific activities and modules
    - **Language Switching**: Automate French or English courses
