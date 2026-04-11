@@ -1,10 +1,10 @@
-name: Run Website Opener Every Hour
+name: Run Website Opener Every 30 Minutes
 
 on:
   push:
     branches: [ main, master ]
   schedule:
-    - cron: '0 * * * *'
+    - cron: '*/30 * * * *'
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
