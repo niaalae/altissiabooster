@@ -1,78 +1,76 @@
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
+const http = require('http');
 
-puppeteer.use(StealthPlugin());
+const LINKS_FILE = path.join(__dirname, 'automation', 'data', 'links.json');
+const PARALLEL = 100;
+const TIMEOUT = 15000;
 
-// Load URLs from config file
-const configPath = path.join(__dirname, 'links.json');
-let urls = [];
-
-try {
-  const configData = fs.readFileSync(configPath, 'utf8');
-  urls = JSON.parse(configData);
-  console.log(`Loaded ${urls.length} URLs from ${configPath}`);
-} catch (err) {
-  console.error(`Error loading config from ${configPath}:`, err.message);
-  process.exit(1);
+function loadJson(file, fallback = []) {
+  try {
+    const data = fs.readFileSync(file, 'utf8');
+    return JSON.parse(data);
+  } catch {
+    return fallback;
+  }
 }
 
-const BATCH_SIZE = 5;
-const WAIT_TIME = 30000; // 30 seconds
+function ping(url) {
+  return new Promise((resolve) => {
+    const isHttps = url.startsWith('https://');
+    const client = isHttps ? https : http;
 
-async function openBatch(batch, batchNumber, totalBatches) {
-  console.log(`\n[Batch ${batchNumber}/${totalBatches}] Opening ${batch.length} URLs...`);
-  
-  const browsers = [];
-  
-  for (let i = 0; i < batch.length; i++) {
-    const url = batch[i];
-    console.log(`  [${i + 1}/${batch.length}] Opening: ${url}`);
-    
-    try {
-      const browser = await puppeteer.launch({
-        headless: true, // HEADLESS MODE
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      });
-      
-      const page = await browser.newPage();
-      await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-      
-      browsers.push(browser);
-    } catch (err) {
-      console.log(`  Error opening ${url}: ${err.message}`);
-    }
-  }
-  
-  console.log(`[Batch ${batchNumber}] Waiting ${WAIT_TIME/1000} seconds...`);
-  await new Promise(resolve => setTimeout(resolve, WAIT_TIME));
-  
-  console.log(`[Batch ${batchNumber}] Closing browsers...`);
-  for (const browser of browsers) {
-    try {
-      await browser.close();
-    } catch (err) {
-      // Ignore close errors
-    }
-  }
-  
-  console.log(`[Batch ${batchNumber}] Done.`);
+    const req = client.get(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    }, (res) => {
+      resolve({ url, ok: res.statusCode >= 200 && res.statusCode < 400, status: res.statusCode });
+      res.destroy();
+    });
+
+    req.on('error', () => resolve({ url, ok: true, status: -1 }));
+    req.setTimeout(TIMEOUT, () => {
+      req.destroy();
+      resolve({ url, ok: true, status: 0 });
+    });
+  });
 }
 
 async function main() {
-  const totalBatches = Math.ceil(urls.length / BATCH_SIZE);
-  console.log(`Starting puppeteer batch opener (HEADLESS MODE)`);
-  console.log(`Total URLs: ${urls.length}, Batch size: ${BATCH_SIZE}, Wait time: ${WAIT_TIME/1000}s`);
-  console.log(`Total batches: ${totalBatches}`);
-  
-  for (let i = 0; i < urls.length; i += BATCH_SIZE) {
-    const batch = urls.slice(i, i + BATCH_SIZE);
-    const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
-    await openBatch(batch, batchNumber, totalBatches);
+  const allLinks = loadJson(LINKS_FILE, []);
+
+  console.log(`Total links to ping: ${allLinks.length}`);
+
+  if (allLinks.length === 0) {
+    console.log('No links to ping. Exiting.');
+    process.exit(0);
   }
-  
-  console.log('\nAll batches completed!');
+
+  let done = 0;
+  let ok = 0;
+  let fail = 0;
+  const total = allLinks.length;
+
+  for (let i = 0; i < allLinks.length; i += PARALLEL) {
+    const chunk = allLinks.slice(i, i + PARALLEL);
+    const results = await Promise.all(chunk.map(url => ping(url)));
+
+    for (const r of results) {
+      if (r.ok) {
+        ok++;
+        console.log(`[OK] ${r.status} ${r.url}`);
+      } else {
+        fail++;
+        console.log(`[FAIL] ${r.status} ${r.url}`);
+      }
+      done++;
+    }
+
+    const pct = Math.round((done / total) * 100);
+    console.log(`Progress: ${done}/${total} (${pct}%) | OK: ${ok} | Fail: ${fail}`);
+  }
+
+  console.log(`\nDone. OK: ${ok} | Failed: ${fail} | Total: ${total}`);
   process.exit(0);
 }
 
