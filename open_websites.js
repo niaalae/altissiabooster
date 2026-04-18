@@ -3,7 +3,7 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 
-const LINKS_FILE = path.join(__dirname, 'automation', 'data', 'links.json');
+const LINKS_FILE = path.join(__dirname, 'links.json');
 const PARALLEL = 100;
 const TIMEOUT = 15000;
 
