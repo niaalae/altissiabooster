@@ -17,8 +17,8 @@ try {
   process.exit(1);
 }
 
-const BATCH_SIZE = 5;
-const WAIT_TIME = 30000;
+const BATCH_SIZE = 10;
+const WAIT_TIME = 15000;
 
 async function openBatch(batch, batchNumber, totalBatches) {
   console.log(`\n[Batch ${batchNumber}/${totalBatches}] Opening ${batch.length} URLs...`);
