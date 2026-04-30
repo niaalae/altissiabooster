@@ -1,0 +1,51 @@
+name: Run Website Opener Matrix
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+
+jobs:
+  run-website-opener-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [0, 1, 2, 3]
+    env:
+      SHARD_INDEX: ${{ matrix.shard }}
+      TOTAL_SHARDS: 4
+      WAIT_TIME_MS: 180000
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          google-chrome --version
+
+      - name: Install dependencies (separate per shard)
+        run: |
+          SHARD_DIR="node_modules_shard_${{ matrix.shard }}"
+          mkdir -p $SHARD_DIR
+          cd $SHARD_DIR
+          npm init -y > /dev/null 2>&1
+          npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth
+          echo "SHARD_DIR=$SHARD_DIR" >> $GITHUB_ENV
+
+      - name: Run matrix website opener script (all links per shard)
+        run: |
+          node open_websites_matrix.js
+        timeout-minutes: 360
+
+      - name: Verify reflex links
+        run: |
+          echo "Shard ${{ matrix.shard }}: Checking reflex links..."
+          grep -i "reflex\|flex.dev" links.json && echo "Reflex links found!" || echo "No reflex links"
+        timeout-minutes: 5
