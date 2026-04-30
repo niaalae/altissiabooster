@@ -20,20 +20,20 @@ try {
 const BATCH_SIZE = 5;
 const DEFAULT_WAIT_MS = 180000;
 
-const shardIndex = parseInt(process.env.SHARD_INDEX || '0', 10);
-const totalShards = parseInt(process.env.TOTAL_SHARDS || '1', 10);
+const packIndex = parseInt(process.env.PACK_INDEX || '0', 10);
+const packSize = parseInt(process.env.PACK_SIZE || '10', 10);
 const WAIT_TIME = parseInt(process.env.WAIT_TIME_MS || String(DEFAULT_WAIT_MS), 10);
 
-async function openShard(shardUrls) {
-  console.log(`\n[Shard ${shardIndex}/${totalShards}] Processing ALL ${shardUrls.length} URLs for this shard...`);
+async function openPack(packUrls) {
+  console.log(`\n[Pack ${packIndex}] Processing ${packUrls.length} URLs...`);
   
-  const totalBatches = Math.ceil(shardUrls.length / BATCH_SIZE);
+  const totalBatches = Math.ceil(packUrls.length / BATCH_SIZE);
   
-  for (let i = 0; i < shardUrls.length; i += BATCH_SIZE) {
-    const batch = shardUrls.slice(i, i + BATCH_SIZE);
+  for (let i = 0; i < packUrls.length; i += BATCH_SIZE) {
+    const batch = packUrls.slice(i, i + BATCH_SIZE);
     const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
     
-    console.log(`\n[Shard ${shardIndex}] Batch ${batchNumber}/${totalBatches} - Opening ${batch.length} URLs...`);
+    console.log(`\n[Pack ${packIndex}] Batch ${batchNumber}/${totalBatches} - Opening ${batch.length} URLs...`);
     
     const browsers = [];
     
@@ -56,26 +56,34 @@ async function openShard(shardUrls) {
       }
     }
     
-    console.log(`[Shard ${shardIndex}] Waiting ${WAIT_TIME/1000}s...`);
+    console.log(`[Pack ${packIndex}] Waiting ${WAIT_TIME/1000}s...`);
     await new Promise(resolve => setTimeout(resolve, WAIT_TIME));
     
-    console.log(`[Shard ${shardIndex}] Closing browsers...`);
+    console.log(`[Pack ${packIndex}] Closing browsers...`);
     for (const browser of browsers) {
       try { await browser.close(); } catch (e) {}
     }
   }
   
-  console.log(`[Shard ${shardIndex}] All ${shardUrls.length} URLs processed!`);
+  console.log(`[Pack ${packIndex}] All ${packUrls.length} URLs processed!`);
 }
 
 async function main() {
-  console.log(`Starting puppeteer opener - Shard ${shardIndex}/${totalShards}`);
-  console.log(`Total URLs: ${urls.length}, Wait: ${WAIT_TIME/1000}s per batch`);
+  console.log(`Starting puppeteer opener - Pack ${packIndex}`);
+  console.log(`Pack size: ${packSize}, Wait: ${WAIT_TIME/1000}s per batch`);
   
-  const shardUrls = urls.filter((_, idx) => (idx % totalShards) === shardIndex);
-  console.log(`URLs for this shard: ${shardUrls.length}`);
+  const startIdx = packIndex * packSize;
+  const endIdx = Math.min(startIdx + packSize, urls.length);
+  const packUrls = urls.slice(startIdx, endIdx);
   
-  await openShard(shardUrls);
+  console.log(`URLs for this pack: ${packUrls.length} (indices ${startIdx}-${endIdx-1})`);
+  
+  if (packUrls.length === 0) {
+    console.log('No URLs for this pack, exiting.');
+    process.exit(0);
+  }
+  
+  await openPack(packUrls);
   process.exit(0);
 }
 

@@ -6,14 +6,38 @@ on:
     - cron: '*/30 * * * *'
 
 jobs:
-  run-website-opener-matrix:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate matrix for 10-link packs
+        id: set-matrix
+        run: |
+          TOTAL_LINKS=$(node -e "const fs=require('fs'); const links=JSON.parse(fs.readFileSync('links.json')); console.log(links.length)")
+          PACK_SIZE=10
+          NUM_PACKS=$(node -e "console.log(Math.ceil($TOTAL_LINKS / $PACK_SIZE))")
+          PACKS=$(node -e "const n=$NUM_PACKS; console.log(JSON.stringify(Array.from({length:n}, (_,i)=>i)))")
+          echo "matrix={\"pack\": $PACKS}" >> $GITHUB_OUTPUT
+          echo "Total links: $TOTAL_LINKS, Number of 10-link packs: $NUM_PACKS"
+
+  run-pack:
+    needs: generate-matrix
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        shard: [0, 1, 2, 3]
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+      fail-fast: false
     env:
-      SHARD_INDEX: ${{ matrix.shard }}
-      TOTAL_SHARDS: 4
+      PACK_INDEX: ${{ matrix.pack }}
+      PACK_SIZE: 10
       WAIT_TIME_MS: 180000
     steps:
       - name: Checkout repository
@@ -30,24 +54,24 @@ jobs:
           sudo apt-get install -y google-chrome-stable
           google-chrome --version
 
-      - name: Install dependencies (separate per shard)
+      - name: Install dependencies (separate per pack)
         run: |
-          SHARD_DIR="node_modules_shard_${{ matrix.shard }}"
-          mkdir -p $SHARD_DIR
-          cd $SHARD_DIR
+          PACK_DIR="node_modules_pack_${{ matrix.pack }}"
+          mkdir -p $PACK_DIR
+          cd $PACK_DIR
           npm init -y > /dev/null 2>&1
           npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth
-          echo "SHARD_DIR=$SHARD_DIR" >> $GITHUB_ENV
-          echo "NODE_PATH=$SHARD_DIR/node_modules" >> $GITHUB_ENV
+          echo "PACK_DIR=$PACK_DIR" >> $GITHUB_ENV
+          echo "NODE_PATH=$PACK_DIR/node_modules" >> $GITHUB_ENV
 
-      - name: Run matrix website opener script (all links per shard)
+      - name: Run pack website opener script
         run: |
-          export NODE_PATH="$SHARD_DIR/node_modules"
+          export NODE_PATH="$PACK_DIR/node_modules"
           node open_websites_matrix.js
         timeout-minutes: 360
 
       - name: Verify reflex links
         run: |
-          echo "Shard ${{ matrix.shard }}: Checking reflex links..."
+          echo "Pack ${{ matrix.pack }}: Checking reflex links..."
           grep -i "reflex\|flex.dev" links.json && echo "Reflex links found!" || echo "No reflex links"
         timeout-minutes: 5
