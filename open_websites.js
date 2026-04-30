@@ -5,6 +5,7 @@ const path = require('path');
 
 puppeteer.use(StealthPlugin());
 
+// Load URLs from config file
 const configPath = path.join(__dirname, 'links.json');
 let urls = [];
 
@@ -18,7 +19,7 @@ try {
 }
 
 const BATCH_SIZE = 5;
-const WAIT_TIME = 30000;
+const WAIT_TIME = 30000; // 30 seconds
 
 async function openBatch(batch, batchNumber, totalBatches) {
   console.log(`\n[Batch ${batchNumber}/${totalBatches}] Opening ${batch.length} URLs...`);
@@ -31,7 +32,7 @@ async function openBatch(batch, batchNumber, totalBatches) {
     
     try {
       const browser = await puppeteer.launch({
-        headless: true,
+        headless: true, // HEADLESS MODE
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
       
@@ -51,7 +52,9 @@ async function openBatch(batch, batchNumber, totalBatches) {
   for (const browser of browsers) {
     try {
       await browser.close();
-    } catch (err) {}
+    } catch (err) {
+      // Ignore close errors
+    }
   }
   
   console.log(`[Batch ${batchNumber}] Done.`);
