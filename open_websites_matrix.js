@@ -18,7 +18,7 @@ try {
 }
 
 const DEFAULT_MAX_PAGES = 10;
-const DEFAULT_WAIT_MS = 180000; // keep pages open ~3 minutes
+const DEFAULT_WAIT_MS = 180000; // 3 minutes
 
 const shardIndex = parseInt(process.env.SHARD_INDEX || '0', 10);
 const totalShards = parseInt(process.env.TOTAL_SHARDS || '1', 10);
@@ -72,8 +72,7 @@ async function main() {
   // determine URLs assigned to this shard
   const shardUrls = urls.filter((_, idx) => (idx % totalShards) === shardIndex);
   await openShard(shardUrls);
-  
-  console.log('\nAll batches completed!');
+
   process.exit(0);
 }
 

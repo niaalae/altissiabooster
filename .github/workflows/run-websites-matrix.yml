@@ -1,0 +1,39 @@
+name: Run Website Opener Matrix
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+
+jobs:
+  run-website-opener-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [0, 1, 2, 3]
+    env:
+      SHARD_INDEX: ${{ matrix.shard }}
+      TOTAL_SHARDS: 4
+      MAX_PAGES: 10
+      WAIT_TIME_MS: 180000
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          google-chrome --version
+
+      - name: Install dependencies (matrix)
+        run: npm install --no-save --prefix . -g ./package-matrix.json || npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth
+
+      - name: Run matrix website opener script
+        run: node open_websites_matrix.js
+        timeout-minutes: 10
