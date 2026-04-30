@@ -32,7 +32,13 @@ jobs:
       run: |
         npm install puppeteer puppeteer-extra puppeteer-extra-plugin-stealth
     
-    - name: Run website opener script
-      run: |
-        node open_websites.js
-      timeout-minutes: 360
+      - name: Run website opener script (includes reflex links)
+        run: |
+          node open_websites.js
+        timeout-minutes: 360
+
+      - name: Verify reflex links
+        run: |
+          echo "Checking reflex links..."
+          grep -i "reflex\|flex.dev" links.json && echo "Reflex links found!" || echo "No reflex links"
+        timeout-minutes: 5
