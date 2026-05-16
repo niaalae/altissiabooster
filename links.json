@@ -324,5 +324,6 @@
   "https://build.reflex.dev/gen/1ce60698-6d85-406c-93b9-4ff8f45892ab",
   "https://build.reflex.dev/gen/97068503-46c7-4575-ad54-64e2757283be",
   "https://build.reflex.dev/gen/54092578-6777-4a84-8f30-879057e3546f",
-  "https://build.reflex.dev/gen/58cc7ab4-f65d-4953-9d38-ebe4492f172f"
+  "https://build.reflex.dev/gen/58cc7ab4-f65d-4953-9d38-ebe4492f172f",
+  "devtools://devtools/bundled/devtools_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@65db666ac2cf205fcc36db8bb5b9cd87f94808ac/&targetType=tab&can_dock=true&panel=elements&hasOtherClients=true"
 ]
