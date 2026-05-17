@@ -328,5 +328,8 @@
   "devtools://devtools/bundled/devtools_app.html?remoteBase=https://chrome-devtools-frontend.appspot.com/serve_file/@65db666ac2cf205fcc36db8bb5b9cd87f94808ac/&targetType=tab&can_dock=true&panel=elements&hasOtherClients=true",
   "https://build.reflex.dev/gen/a4d915dc-20f1-4df7-b090-6bf45af52f9a/",
   "https://build.reflex.dev/gen/681cbde1-ca5c-4a6b-ba4d-838b49563e70/",
-  "https://build.reflex.dev/gen/631c227f-ec96-4da0-bb36-ff7825a448c9/"
+  "https://build.reflex.dev/gen/631c227f-ec96-4da0-bb36-ff7825a448c9/",
+  "https://build.reflex.dev/gen/11198e65-ae68-458d-867d-744c3218d5f4",
+  "https://build.reflex.dev/gen/290725ee-4f98-4415-8325-e99984db8190",
+  "https://build.reflex.dev/gen/e9d86de8-18d7-4490-a4ac-12a178d10855"
 ]
