@@ -78,15 +78,17 @@ async def refresh_one(page, label: str):
         await page.reload(wait_until="commit", timeout=45000)
         if label == "login" and ("/login" in page.url or "sign-in" in page.url):
             log(f"  WARNING: {page.url} redirected to login - session may be expired")
-        else:
-            log(f"  refreshed [{label}]: {page.url}")
+            return page, False
+        log(f"  refreshed [{label}]: {page.url}")
+        return page, True
     except Exception as e:
         log(f"  refresh failed [{label}] ({page.url}): {e}")
-    return page
+        return page, False
 
 
-async def refresh_tabs(pages: list, label: str) -> list:
-    return await asyncio.gather(*(refresh_one(p, label) for p in pages))
+async def refresh_tabs(pages: list, label: str):
+    results = await asyncio.gather(*(refresh_one(p, label) for p in pages))
+    return [r[0] for r in results], all(r[1] for r in results)
 
 
 async def run_keeper() -> None:
@@ -138,11 +140,13 @@ async def run_keeper() -> None:
                     await asyncio.sleep(interval)
                     log(f"refreshing {len(login_pages) + len(guest_pages)} tab(s) in parallel...")
                     try:
-                        login_pages, guest_pages = await asyncio.gather(
-                            refresh_tabs(login_pages, label="login"),
-                            refresh_tabs(guest_pages, label="guest"))
-                        await dump_cookies(login_ctx, cookies_file)
-                        log(f"live cookies re-exported to {cookies_file} (auto-refresh)")
+                        login_pages, login_ok = await refresh_tabs(login_pages, label="login")
+                        guest_pages, _ = await refresh_tabs(guest_pages, label="guest")
+                        if login_ok:
+                            await dump_cookies(login_ctx, cookies_file)
+                            log(f"live cookies re-exported to {cookies_file} (auto-refresh)")
+                        else:
+                            log("session appears dead - cookie export SKIPPED to protect good cookies")
                     except Exception as e:
                         if browser and not browser.is_connected():
                             raise
