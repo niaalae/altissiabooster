@@ -4,16 +4,17 @@ session_keeper.py - keeps authenticated browser tabs alive forever.
 
 Reads links + settings from config.json, loads Netscape cookies into a
 browser context (all tabs share the same session), opens one tab per link,
-and refreshes every tab every refresh_interval_seconds, in an endless loop.
+and refreshes every tab in PARALLEL every refresh_interval_seconds,
+in an endless loop.
 """
+import asyncio
 import http.cookiejar
 import json
 import os
-import time
 from datetime import datetime
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 
 CONFIG_PATH = Path(__file__).parent / "config.json"
 
@@ -44,33 +45,30 @@ def load_cookies(path: str) -> list:
     return cookies
 
 
-def open_tab(context, url: str):
-    page = context.new_page()
-    page.goto(url, wait_until="domcontentloaded", timeout=60000)
-    page.wait_for_timeout(3000)
+async def open_tab(context, url: str):
+    page = await context.new_page()
+    await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+    await page.wait_for_timeout(1000)
     return page
 
 
-def refresh_tabs(pages: list, label: str = "tab") -> list:
-    alive = []
-    for page in pages:
-        try:
-            if page.is_closed():
-                log(f"  {label} closed, skipping")
-                continue
-            page.reload(wait_until="domcontentloaded", timeout=60000)
-            page.wait_for_timeout(1500)
-            if label == "login" and ("/login" in page.url or "sign-in" in page.url):
-                log(f"  WARNING: {page.url} redirected to login - session may be expired")
-            else:
-                log(f"  refreshed [{label}]: {page.url}")
-            alive.append(page)
-        except Exception as e:
-            log(f"  refresh failed [{label}] ({page.url}): {e}")
-    return alive
+async def refresh_one(page, label: str):
+    try:
+        await page.reload(wait_until="commit", timeout=45000)
+        if label == "login" and ("/login" in page.url or "sign-in" in page.url):
+            log(f"  WARNING: {page.url} redirected to login - session may be expired")
+        else:
+            log(f"  refreshed [{label}]: {page.url}")
+    except Exception as e:
+        log(f"  refresh failed [{label}] ({page.url}): {e}")
+    return page
 
 
-def main() -> None:
+async def refresh_tabs(pages: list, label: str) -> list:
+    return await asyncio.gather(*(refresh_one(p, label) for p in pages))
+
+
+async def run_keeper() -> None:
     cfg = load_config()
     links = cfg.get("links", [])
     if not links:
@@ -94,31 +92,33 @@ def main() -> None:
 
     launch_args = ["--no-sandbox"] if no_sandbox else []
 
-    with sync_playwright() as p:
+    async with async_playwright() as p:
         while True:
             browser = None
             try:
                 log("launching browser...")
-                browser = p.chromium.launch(headless=headless, executable_path=executable_path, args=launch_args)
+                browser = await p.chromium.launch(
+                    headless=headless, executable_path=executable_path, args=launch_args)
 
-                login_ctx = browser.new_context(viewport={"width": 900, "height": 700})
-                login_ctx.add_cookies(cookies)
+                login_ctx = await browser.new_context(viewport={"width": 900, "height": 700})
+                await login_ctx.add_cookies(cookies)
                 log("cookies injected into login context")
 
-                guest_ctx = browser.new_context(viewport={"width": 900, "height": 700})
+                guest_ctx = await browser.new_context(viewport={"width": 900, "height": 700})
                 log("guest context created (no cookies)")
 
-                login_pages = [open_tab(login_ctx, url) for url in links]
+                login_pages = [await open_tab(login_ctx, url) for url in links]
                 log(f"opened {len(login_pages)} login tab(s)")
-                guest_pages = [open_tab(guest_ctx, url) for url in links] if guest_tabs else []
+                guest_pages = [await open_tab(guest_ctx, url) for url in links] if guest_tabs else []
                 if guest_pages:
                     log(f"opened {len(guest_pages)} guest tab(s)")
 
                 while True:
-                    time.sleep(interval)
-                    log(f"refreshing {len(login_pages) + len(guest_pages)} tab(s)...")
-                    login_pages = refresh_tabs(login_pages, label="login")
-                    guest_pages = refresh_tabs(guest_pages, label="guest")
+                    await asyncio.sleep(interval)
+                    log(f"refreshing {len(login_pages) + len(guest_pages)} tab(s) in parallel...")
+                    login_pages, guest_pages = await asyncio.gather(
+                        refresh_tabs(login_pages, label="login"),
+                        refresh_tabs(guest_pages, label="guest"))
             except KeyboardInterrupt:
                 log("stopped by user")
                 break
@@ -127,11 +127,18 @@ def main() -> None:
             finally:
                 if browser:
                     try:
-                        browser.close()
+                        await browser.close()
                     except Exception:
                         pass
                 log("restarting cycle in 10s...")
-                time.sleep(10)
+                await asyncio.sleep(10)
+
+
+def main() -> None:
+    try:
+        asyncio.run(run_keeper())
+    except KeyboardInterrupt:
+        log("stopped by user")
 
 
 if __name__ == "__main__":
