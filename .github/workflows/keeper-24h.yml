@@ -1,0 +1,50 @@
+name: session-keeper-24h
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive-1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore cookies from secret
+        run: echo "${{ secrets.COOKIES_B64 }}" | base64 -d > session-keeper/cookies-v0-app.txt
+      - name: Run session keeper (segment 1/4)
+        run: bash session-keeper/setup_and_run.sh
+
+  keep-alive-2:
+    needs: keep-alive-1
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore cookies from secret
+        run: echo "${{ secrets.COOKIES_B64 }}" | base64 -d > session-keeper/cookies-v0-app.txt
+      - name: Run session keeper (segment 2/4)
+        run: bash session-keeper/setup_and_run.sh
+
+  keep-alive-3:
+    needs: keep-alive-2
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore cookies from secret
+        run: echo "${{ secrets.COOKIES_B64 }}" | base64 -d > session-keeper/cookies-v0-app.txt
+      - name: Run session keeper (segment 3/4)
+        run: bash session-keeper/setup_and_run.sh
+
+  keep-alive-4:
+    needs: keep-alive-3
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore cookies from secret
+        run: echo "${{ secrets.COOKIES_B64 }}" | base64 -d > session-keeper/cookies-v0-app.txt
+      - name: Run session keeper (segment 4/4)
+        run: bash session-keeper/setup_and_run.sh

@@ -40,3 +40,7 @@ data/
 keypairs/*.key
 keypairs/*.pem
 !keypairs/README.md
+
+# Session keeper
+session-keeper/venv/
+session-keeper/cookies-v0-app.txt
