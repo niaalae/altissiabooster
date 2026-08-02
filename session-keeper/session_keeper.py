@@ -137,14 +137,16 @@ async def run_keeper() -> None:
                 while True:
                     await asyncio.sleep(interval)
                     log(f"refreshing {len(login_pages) + len(guest_pages)} tab(s) in parallel...")
-                    login_pages, guest_pages = await asyncio.gather(
-                        refresh_tabs(login_pages, label="login"),
-                        refresh_tabs(guest_pages, label="guest"))
                     try:
+                        login_pages, guest_pages = await asyncio.gather(
+                            refresh_tabs(login_pages, label="login"),
+                            refresh_tabs(guest_pages, label="guest"))
                         await dump_cookies(login_ctx, cookies_file)
                         log(f"live cookies re-exported to {cookies_file} (auto-refresh)")
                     except Exception as e:
-                        log(f"cookie dump failed: {e}")
+                        if browser and not browser.is_connected():
+                            raise
+                        log(f"cycle hiccup (browser kept alive): {e}")
             except KeyboardInterrupt:
                 log("stopped by user")
                 break
