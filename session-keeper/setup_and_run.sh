@@ -27,7 +27,7 @@ if [ ! -d "$VENV_DIR" ]; then
   python3 -m venv "$VENV_DIR"
 fi
 "$VENV_DIR/bin/pip" install -q --upgrade pip
-"$VENV_DIR/bin/pip" install -q playwright
+"$VENV_DIR/bin/pip" install -q playwright pynacl
 
 # 3. Make sure a browser binary exists, then point config.json at it
 BROWSER=""
@@ -61,11 +61,9 @@ cfg_path.write_text(json.dumps(cfg, indent=2))
 PYEOF
 fi
 
-# 4. Run the keeper forever (restart on crash)
-echo "[$(date)] entering keep-alive loop..."
-while true; do
-  echo "[$(date)] starting session_keeper.py"
-  "$VENV_DIR/bin/python" "$SCRIPT_DIR/session_keeper.py" || true
-  echo "[$(date)] keeper exited, restarting in 10s"
-  sleep 10
-done
+# 4. Run the keeper for one segment (5h50m, under the 6h job cap).
+#    The keeper auto re-exports live cookies each cycle; the workflow
+#    uploads the fresh file back to the GH secret afterwards.
+echo "[$(date)] entering keep-alive segment (5h50m)..."
+timeout 21000 "$VENV_DIR/bin/python" "$SCRIPT_DIR/session_keeper.py" || true
+echo "[$(date)] segment ended, handing over to next job"

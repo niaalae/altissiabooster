@@ -45,6 +45,27 @@ def load_cookies(path: str) -> list:
     return cookies
 
 
+async def dump_cookies(context, path: str) -> None:
+    if not os.path.isabs(path):
+        path = str(CONFIG_PATH.parent / path)
+    cookies = await context.cookies()
+    lines = ["# Netscape HTTP Cookie File"]
+    for c in cookies:
+        domain = c["domain"]
+        if c.get("httpOnly"):
+            domain = "#HttpOnly_" + domain
+        lines.append("\t".join([
+            domain,
+            "TRUE" if c["domain"].startswith(".") else "FALSE",
+            c["path"],
+            "TRUE" if c.get("secure") else "FALSE",
+            str(int(c["expires"])) if c.get("expires") and c["expires"] > 0 else "",
+            c["name"], c["value"],
+        ]))
+    with open(path, "w") as f:
+        f.write("\n".join(lines) + "\n")
+
+
 async def open_tab(context, url: str):
     page = await context.new_page()
     await page.goto(url, wait_until="domcontentloaded", timeout=60000)
@@ -119,6 +140,11 @@ async def run_keeper() -> None:
                     login_pages, guest_pages = await asyncio.gather(
                         refresh_tabs(login_pages, label="login"),
                         refresh_tabs(guest_pages, label="guest"))
+                    try:
+                        await dump_cookies(login_ctx, cookies_file)
+                        log(f"live cookies re-exported to {cookies_file} (auto-refresh)")
+                    except Exception as e:
+                        log(f"cookie dump failed: {e}")
             except KeyboardInterrupt:
                 log("stopped by user")
                 break
