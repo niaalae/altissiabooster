@@ -96,6 +96,7 @@ async def run_keeper() -> None:
     links = cfg.get("links", [])
     if not links:
         raise SystemExit("config.json has no links - add at least one URL")
+    cross_links = cfg.get("cross_links", [])
 
     interval = int(cfg.get("refresh_interval_seconds", 300))
     headless = bool(cfg.get("headless", False))
@@ -104,10 +105,10 @@ async def run_keeper() -> None:
     executable_path = cfg.get("executable_path") or None
     cookies_file = cfg.get("cookies_file", "")
 
-    tab_total = len(links) * (2 if guest_tabs else 1)
+    tab_total = len(links) * (2 if guest_tabs else 1) + len(cross_links)
     log(f"session_keeper started: {len(links)} link(s) x "
-        f"{'login+guest' if guest_tabs else 'login-only'} = {tab_total} tab(s), "
-        f"refresh every {interval}s, headless={headless}, "
+        f"{'login+guest' if guest_tabs else 'login-only'} + {len(cross_links)} cross = "
+        f"{tab_total} tab(s), refresh every {interval}s, headless={headless}, "
         f"executable={executable_path or 'bundled'}")
     log(f"loading cookies from {cookies_file}")
     cookies = load_cookies(cookies_file)
@@ -132,17 +133,21 @@ async def run_keeper() -> None:
 
                 login_pages = [await open_tab(login_ctx, url) for url in links]
                 log(f"opened {len(login_pages)} login tab(s)")
+                cross_pages = [await open_tab(login_ctx, url) for url in cross_links] if cross_links else []
+                if cross_pages:
+                    log(f"opened {len(cross_pages)} cross tab(s)")
                 guest_pages = [await open_tab(guest_ctx, url) for url in links] if guest_tabs else []
                 if guest_pages:
                     log(f"opened {len(guest_pages)} guest tab(s)")
 
                 while True:
                     await asyncio.sleep(interval)
-                    log(f"refreshing {len(login_pages) + len(guest_pages)} tab(s) in parallel...")
+                    log(f"refreshing {len(login_pages) + len(cross_pages) + len(guest_pages)} tab(s) in parallel...")
                     try:
                         login_pages, login_ok = await refresh_tabs(login_pages, label="login")
+                        cross_pages, cross_ok = await refresh_tabs(cross_pages, label="cross")
                         guest_pages, _ = await refresh_tabs(guest_pages, label="guest")
-                        if login_ok:
+                        if login_ok and cross_ok:
                             await dump_cookies(login_ctx, cookies_file)
                             log(f"live cookies re-exported to {cookies_file} (auto-refresh)")
                         else:

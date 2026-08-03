@@ -6,7 +6,8 @@ set -euo pipefail
 # next 6h segment starts with live cookies. Requires: GH_PAT secret (PAT with
 # repo scope + secrets write) and a python3 venv with pynacl.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COOKIE_FILE="$SCRIPT_DIR/session-keeper/cookies-v0-app.txt"
+COOKIE_FILE="${COOKIE_FILE:-$SCRIPT_DIR/session-keeper/cookies-v0-app.txt}"
+SECRET_NAME="${SECRET_NAME:-COOKIES_B64}"
 REPO="${GITHUB_REPOSITORY:-niaalae/altissiabooster}"
 
 if [ -z "${GH_PAT:-}" ]; then
@@ -20,11 +21,11 @@ if [ ! -d "$VENV_DIR" ]; then
   "$VENV_DIR/bin/pip" install -q pynacl
 fi
 
-"$VENV_DIR/bin/python" - "$COOKIE_FILE" "$REPO" "$GH_PAT" <<'PYEOF'
+"$VENV_DIR/bin/python" - "$COOKIE_FILE" "$SECRET_NAME" "$REPO" "$GH_PAT" <<'PYEOF'
 import base64, json, os, sys, urllib.request
 from nacl.public import PublicKey, SealedBox
 
-cookie_file, repo, token = sys.argv[1], sys.argv[2], sys.argv[3]
+cookie_file, secret_name, repo, token = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 
 with open(cookie_file, "rb") as f:
     secret_value = base64.b64encode(f.read()).decode()
@@ -41,10 +42,10 @@ pubkey = PublicKey(base64.b64decode(key_resp["key"]))
 encrypted = base64.b64encode(SealedBox(pubkey).encrypt(secret_value.encode())).decode()
 
 req = urllib.request.Request(
-    f"https://api.github.com/repos/{repo}/actions/secrets/COOKIES_B64",
+    f"https://api.github.com/repos/{repo}/actions/secrets/{secret_name}",
     data=json.dumps({"encrypted_value": encrypted, "key_id": key_resp["key_id"]}).encode(),
     headers={"Authorization": f"token {token}", "Accept": "application/vnd.github+json"},
     method="PUT")
 status = urllib.request.urlopen(req).status
-print(f"[{__import__('datetime').datetime.now()}] cookie secret refreshed: {status}")
+print(f"[{__import__('datetime').datetime.now()}] cookie secret {secret_name} refreshed: {status}")
 PYEOF
