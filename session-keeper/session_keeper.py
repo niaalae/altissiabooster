@@ -16,7 +16,7 @@ from pathlib import Path
 
 from playwright.async_api import async_playwright
 
-CONFIG_PATH = Path(__file__).parent / "config.json"
+CONFIG_PATH = Path(__file__).parent / os.environ.get("KEEPER_CONFIG", "config.json")
 
 
 def log(msg: str) -> None:

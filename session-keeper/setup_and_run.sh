@@ -8,6 +8,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+KEEPER_CONFIG="${KEEPER_CONFIG:-config.json}"
+echo "[$(date)] using config: $KEEPER_CONFIG"
+
 echo "[$(date)] === session-keeper launcher ==="
 
 # 1. Install system packages (apt-based systems: local + GitHub Actions)
@@ -40,10 +43,10 @@ done
 
 if [ -n "$BROWSER" ]; then
   echo "[$(date)] using browser: $BROWSER"
-  "$VENV_DIR/bin/python" - "$BROWSER" <<'PYEOF'
+  "$VENV_DIR/bin/python" - "$BROWSER" "$KEEPER_CONFIG" <<'PYEOF'
 import json, sys
 from pathlib import Path
-cfg_path = Path("config.json")
+cfg_path = Path(sys.argv[2])
 cfg = json.loads(cfg_path.read_text())
 cfg["executable_path"] = sys.argv[1]
 cfg_path.write_text(json.dumps(cfg, indent=2))
@@ -51,10 +54,10 @@ PYEOF
 else
   echo "[$(date)] no system chromium found, installing playwright's bundled chromium..."
   "$VENV_DIR/bin/playwright" install chromium --with-deps
-  "$VENV_DIR/bin/python" - <<'PYEOF'
-import json
+  "$VENV_DIR/bin/python" - "$KEEPER_CONFIG" <<'PYEOF'
+import json, sys
 from pathlib import Path
-cfg_path = Path("config.json")
+cfg_path = Path(sys.argv[1])
 cfg = json.loads(cfg_path.read_text())
 cfg["executable_path"] = ""
 cfg_path.write_text(json.dumps(cfg, indent=2))

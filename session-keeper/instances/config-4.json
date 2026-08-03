@@ -1,0 +1,21 @@
+{
+  "cookies_file": "cookies-v0-app.txt",
+  "executable_path": "/usr/bin/chromium",
+  "refresh_interval_seconds": 300,
+  "headless": true,
+  "guest_tabs": true,
+  "no_sandbox": true,
+  "links": [
+    "https://v0.app/alanenniaa/chat/web-termge-lqv7JDIr2Og",
+    "https://v0.app/alanenniaa/chat/web-termife-zwCSNF8nU7z",
+    "https://v0.app/alanenniaa/chat/web-terminal-few-2-e-hKeYs3umNTA",
+    "https://v0.app/alanenniaa/chat/web-termg-aNNOvaF44O8",
+    "https://v0.app/alanenniaa/chat/web-termirg-qVZUNxIDfRZ",
+    "https://v0.app/alanenniaa/chat/web-termge-2-few-cvTEWiuPgkj",
+    "https://v0.app/alanenniaa/chat/web-termiffe-HLxozdJdVCG",
+    "https://v0.app/alanenniaa/chat/web-terminal-application-2-Iki971sdJRV",
+    "https://v0.app/alanenniaa/chat/web-termife-2-QfQP4try9Jx",
+    "https://v0.app/alanenniaa/chat/web-termife-2-3x0hYAASnwz",
+    "https://v0.app/alanenniaa/chat/web-termife-2-Ymb3AvcfY0W"
+  ]
+}
