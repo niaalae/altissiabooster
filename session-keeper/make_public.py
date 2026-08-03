@@ -4,7 +4,7 @@
 Only marks a link as fixed when the "chat privacy updated" confirmation appears.
 Already-public links are skipped; links showing errors/"not found" are skipped.
 
-Usage: ./venv/bin/python make_public.py [acc] [limit]
+Usage: ./venv/bin/python make_public.py [acc] [limit] [--headless]
 Persists fixed links to instances/<acc>/public-links.txt (resume-safe).
 """
 import asyncio, http.cookiejar, json, sys
@@ -12,7 +12,9 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 
 ACC = sys.argv[1] if len(sys.argv) > 1 else "acc2"
-LIMIT = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+LIMIT = int(sys.argv[2]) if len(sys.argv) > 2 and sys.argv[2].lstrip("-").isdigit() else 0
+OFFSET = int(sys.argv[3]) if len(sys.argv) > 3 and sys.argv[3].lstrip("-").isdigit() else 0
+HEADLESS = "--headless" in sys.argv
 BASE = Path(__file__).parent
 LINKS = json.load(open(BASE / f"instances/{ACC}/config.json"))["links"]
 OUT = BASE / f"instances/{ACC}/public-links.txt"
@@ -32,10 +34,10 @@ async def main():
     print(f"loaded {len(cookies)} cookies for {ACC}")
     done = set(OUT.read_text().splitlines()) if OUT.exists() else set()
     fixed = list(done)
-    todo = LINKS[:LIMIT] if LIMIT else LINKS
+    todo = LINKS[OFFSET:OFFSET + LIMIT] if LIMIT else LINKS
     async with async_playwright() as p:
         browser = await p.chromium.launch(
-            headless=False,
+            headless=HEADLESS,
             executable_path="/usr/bin/google-chrome-stable",
             args=["--no-sandbox"])
         ctx = await browser.new_context()
