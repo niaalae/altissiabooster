@@ -1,5 +1,5 @@
 {
-  "cookies_file": "cookies-v0-app.txt",
+  "cookies_file": "../cookies-v0-app.txt",
   "executable_path": "/usr/bin/chromium",
   "refresh_interval_seconds": 300,
   "headless": true,
