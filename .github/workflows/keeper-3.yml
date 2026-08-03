@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  KEEPER_CONFIG: session-keeper/instances/config-3.json
+  KEEPER_CONFIG: instances/config-3.json
 
 jobs:
   keep-alive-1:
