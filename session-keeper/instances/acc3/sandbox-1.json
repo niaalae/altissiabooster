@@ -1,24 +1,29 @@
 {
   "cookies_file": "cookies.txt",
-  "executable_path": "/usr/bin/chromium",
+  "executable_path": "/usr/bin/google-chrome-stable",
   "refresh_interval_seconds": 300,
   "headless": true,
   "guest_tabs": true,
   "no_sandbox": true,
   "links": [
-    "https://v0.app/alantjytyt/chat/1KGvykBjmy2",
-    "https://v0.app/alantjytyt/chat/2Hn9YrOQ8E8",
-    "https://v0.app/alantjytyt/chat/4M5mXfOnh0D",
-    "https://v0.app/alantjytyt/chat/90NGDVJjxFF",
-    "https://v0.app/alantjytyt/chat/AkrJq7w6W2m",
-    "https://v0.app/alantjytyt/chat/BsuydIsPGwd",
-    "https://v0.app/alantjytyt/chat/FLgdB4v1T3L",
-    "https://v0.app/alantjytyt/chat/FmHMwqkZOuP",
-    "https://v0.app/alantjytyt/chat/GQbWQMXrY8C",
-    "https://v0.app/alantjytyt/chat/ImjBMrl4sTe",
-    "https://v0.app/alantjytyt/chat/JFR4aAiTZ5O",
-    "https://v0.app/alantjytyt/chat/MM8yAOJHiWc",
-    "https://v0.app/alantjytyt/chat/Mu7YJVjKsF7"
+    "https://v0.app/alanwy004-ops/chat/5bA3g8vL3m2",
+    "https://v0.app/alanwy004-ops/chat/9h14Wff16fQ",
+    "https://v0.app/alanwy004-ops/chat/AJPg9hwWY5r",
+    "https://v0.app/alanwy004-ops/chat/Agu0gXhWvyH",
+    "https://v0.app/alanwy004-ops/chat/AxON7SW4L1D",
+    "https://v0.app/alanwy004-ops/chat/D3eNx1KcBUd",
+    "https://v0.app/alanwy004-ops/chat/P52NlhLqU83",
+    "https://v0.app/alanwy004-ops/chat/QhFPEUf6qWN",
+    "https://v0.app/alanwy004-ops/chat/UsY2QNown8a",
+    "https://v0.app/alanwy004-ops/chat/VJQ52AL6AFG",
+    "https://v0.app/alanwy004-ops/chat/WH5ShtXerKA",
+    "https://v0.app/alanwy004-ops/chat/aFZIT3ZOrJC",
+    "https://v0.app/alanwy004-ops/chat/f1NAnpM00x3",
+    "https://v0.app/alanwy004-ops/chat/hgczODkbDlM",
+    "https://v0.app/alanwy004-ops/chat/khZGwxA0pmW",
+    "https://v0.app/alanwy004-ops/chat/mmfqebcMfps",
+    "https://v0.app/alanwy004-ops/chat/smaUcvF1Ljf",
+    "https://v0.app/alanwy004-ops/chat/w0ydp8YogpE"
   ],
   "cross_links": [
     "https://v0.app/alanenniaa/chat/web-terminal-application-jqspfHl10yn",
@@ -51,10 +56,6 @@
     "https://v0.app/alanenniaa/chat/web-terminal-application-4-m-3-gg-2-erg-lz2bjhaSHvG",
     "https://v0.app/alanenniaa/chat/web-terminal-application-4-k-3-rge-2-rgge-SFGehHXApPt",
     "https://v0.app/alanenniaa/chat/web-terminal-application-4-kk-m-2-2-4r-2-re-xeYHW6v8Kg7",
-    "https://v0.app/alanenniaa/chat/web-terminal-few-eTy03oAKZiM",
-    "https://v0.app/alanenniaa/chat/web-terminal-application-5-l-2-ge-2-gre-2-g-pDhrWIwzuuu",
-    "https://v0.app/alanenniaa/chat/web-terminalew-QMjaFuTL7s6",
-    "https://v0.app/alanenniaa/chat/web-termge-lqv7JDIr2Og",
-    "https://v0.app/alanenniaa/chat/web-termife-zwCSNF8nU7z"
+    "https://v0.app/alanenniaa/chat/web-terminal-few-eTy03oAKZiM"
   ]
 }

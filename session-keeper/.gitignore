@@ -3,3 +3,5 @@ venv/
 instances/__pycache__/
 instances/acc1/cookies.txt
 instances/acc2/cookies.txt
+instances/acc3/cookies.txt
+instances/acc2/public-links.txt

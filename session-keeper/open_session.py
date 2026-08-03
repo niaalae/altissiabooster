@@ -59,6 +59,7 @@ def dump_cookies(cookies: list, path: str) -> None:
 
 async def main() -> None:
     cookies_file = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_COOKIES
+    target = sys.argv[2] if len(sys.argv) > 2 else "https://v0.app"
     cookie_path = Path(cookies_file).expanduser()
     if not cookie_path.exists():
         raise SystemExit(f"cookies file not found: {cookie_path}")
@@ -77,7 +78,7 @@ async def main() -> None:
             ctx = await browser.new_context(viewport={"width": 1280, "height": 800})
             await ctx.add_cookies(cookies)
             page = await ctx.new_page()
-            await page.goto("https://v0.app", wait_until="domcontentloaded", timeout=60000)
+            await page.goto(target, wait_until="domcontentloaded", timeout=60000)
             log(f"opened {page.url}")
             log("sign in manually if prompted; press Ctrl+C when logged in - cookies get re-exported")
             while True:
