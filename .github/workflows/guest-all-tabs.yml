@@ -1,0 +1,60 @@
+name: guest-all-tabs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  sandbox-1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run keeper (guest tabs, no cookies)
+        env:
+          KEEPER_CONFIG: instances/guest-all/sandbox-1.json
+        run: bash session-keeper/setup_and_run.sh
+  sandbox-2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run keeper (guest tabs, no cookies)
+        env:
+          KEEPER_CONFIG: instances/guest-all/sandbox-2.json
+        run: bash session-keeper/setup_and_run.sh
+  sandbox-3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run keeper (guest tabs, no cookies)
+        env:
+          KEEPER_CONFIG: instances/guest-all/sandbox-3.json
+        run: bash session-keeper/setup_and_run.sh
+  sandbox-4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run keeper (guest tabs, no cookies)
+        env:
+          KEEPER_CONFIG: instances/guest-all/sandbox-4.json
+        run: bash session-keeper/setup_and_run.sh
+  sandbox-5:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run keeper (guest tabs, no cookies)
+        env:
+          KEEPER_CONFIG: instances/guest-all/sandbox-5.json
+        run: bash session-keeper/setup_and_run.sh
+  sandbox-6:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run keeper (guest tabs, no cookies)
+        env:
+          KEEPER_CONFIG: instances/guest-all/sandbox-6.json
+        run: bash session-keeper/setup_and_run.sh
