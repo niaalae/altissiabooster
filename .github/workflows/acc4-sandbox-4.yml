@@ -1,0 +1,79 @@
+name: acc4-sandbox-4
+
+on:
+  schedule:
+    - cron: '57 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  seg-1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore cookies from secret
+        run: echo "${{ secrets.COOKIES_B64_ACC4 }}" | base64 -d > session-keeper/instances/acc4/cookies.txt
+      - name: Run keeper (segment 1/4)
+        env:
+          KEEPER_CONFIG: instances/acc4/sandbox-4.json
+        run: bash session-keeper/setup_and_run.sh
+      - name: Refresh cookie secret for next segment
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          COOKIE_FILE: session-keeper/instances/acc4/cookies.txt
+          SECRET_NAME: COOKIES_B64_ACC4
+        run: bash upload_cookies.sh
+  seg-2:
+    needs: seg-1
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore cookies from secret
+        run: echo "${{ secrets.COOKIES_B64_ACC4 }}" | base64 -d > session-keeper/instances/acc4/cookies.txt
+      - name: Run keeper (segment 2/4)
+        env:
+          KEEPER_CONFIG: instances/acc4/sandbox-4.json
+        run: bash session-keeper/setup_and_run.sh
+      - name: Refresh cookie secret for next segment
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          COOKIE_FILE: session-keeper/instances/acc4/cookies.txt
+          SECRET_NAME: COOKIES_B64_ACC4
+        run: bash upload_cookies.sh
+  seg-3:
+    needs: seg-2
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore cookies from secret
+        run: echo "${{ secrets.COOKIES_B64_ACC4 }}" | base64 -d > session-keeper/instances/acc4/cookies.txt
+      - name: Run keeper (segment 3/4)
+        env:
+          KEEPER_CONFIG: instances/acc4/sandbox-4.json
+        run: bash session-keeper/setup_and_run.sh
+      - name: Refresh cookie secret for next segment
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          COOKIE_FILE: session-keeper/instances/acc4/cookies.txt
+          SECRET_NAME: COOKIES_B64_ACC4
+        run: bash upload_cookies.sh
+  seg-4:
+    needs: seg-3
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore cookies from secret
+        run: echo "${{ secrets.COOKIES_B64_ACC4 }}" | base64 -d > session-keeper/instances/acc4/cookies.txt
+      - name: Run keeper (segment 4/4)
+        env:
+          KEEPER_CONFIG: instances/acc4/sandbox-4.json
+        run: bash session-keeper/setup_and_run.sh
+      - name: Refresh cookie secret for next segment
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          COOKIE_FILE: session-keeper/instances/acc4/cookies.txt
+          SECRET_NAME: COOKIES_B64_ACC4
+        run: bash upload_cookies.sh
