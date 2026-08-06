@@ -102,6 +102,7 @@ async def run_keeper() -> None:
     headless = bool(cfg.get("headless", False))
     guest_tabs = bool(cfg.get("guest_tabs", False))
     no_sandbox = bool(cfg.get("no_sandbox", False))
+    stealth = bool(cfg.get("stealth", False))
     executable_path = cfg.get("executable_path") or None
     cookies_file = cfg.get("cookies_file", "")
 
@@ -115,6 +116,12 @@ async def run_keeper() -> None:
     log(f"loaded {len(cookies)} cookies")
 
     launch_args = ["--no-sandbox"] if no_sandbox else []
+    ignore_default = ["--enable-automation"] if stealth else []
+    if stealth:
+        launch_args += ["--disable-blink-features=AutomationControlled",
+                        "--no-first-run", "--no-default-browser-check", "--start-maximized"]
+    if executable_path:
+        log(f"stealth={stealth}, extra launch args: {launch_args}")
 
     async with async_playwright() as p:
         while True:
@@ -122,9 +129,14 @@ async def run_keeper() -> None:
             try:
                 log("launching browser...")
                 browser = await p.chromium.launch(
-                    headless=headless, executable_path=executable_path, args=launch_args)
+                    headless=headless, executable_path=executable_path,
+                    args=launch_args, ignore_default_args=ignore_default)
 
                 login_ctx = await browser.new_context(viewport={"width": 900, "height": 700})
+                if stealth:
+                    await login_ctx.add_init_script(
+                        "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+                    log("stealth init script injected (navigator.webdriver hidden)")
                 await login_ctx.add_cookies(cookies)
                 log("cookies injected into login context")
 
