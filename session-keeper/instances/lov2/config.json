@@ -1,0 +1,14 @@
+{
+  "cookies_file": "cookies.txt",
+  "executable_path": "/usr/bin/chromium",
+  "refresh_interval_seconds": 300,
+  "headless": true,
+  "guest_tabs": false,
+  "no_sandbox": true,
+  "links": [
+    "https://lovable.dev/projects/fc2c03c5-fa22-462a-8344-167e220572eb?remixed=true",
+    "https://lovable.dev/projects/e6de3bd9-b1df-4757-ba84-8e4ea113a18f?remixed=true",
+    "https://lovable.dev/projects/c0808f7b-49ba-47c9-9f88-f236f0d4d05b?remixed=true",
+    "https://lovable.dev/projects/49b34fb0-b6cf-4d06-aa53-a238875abb8b?remixed=true"
+  ]
+}
